@@ -392,6 +392,17 @@ export function apply(ctx: Context): void {
           layout.openDetails()
         },
         fileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner),
+        appendAnnotation: (text) => {
+          const shell = inputHub.shell(sessionId)
+          const separator = shell.snapshot.draft.trim() === '' ? '' : '\n\n'
+          shell.setDraft(`${shell.snapshot.draft}${separator}${text}`)
+          requestAnimationFrame(() => {
+            const composer = Array.from(document.querySelectorAll<HTMLTextAreaElement>('[data-composer-input]'))
+              .find(input => input.dataset.composerInput === sessionId)
+            composer?.focus()
+            composer?.setSelectionRange(composer.value.length, composer.value.length)
+          })
+        },
         openFile: (path) => {
           const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
           void workspaces.openPath(resolveWorkspacePath(cwd, path)).catch(() => {

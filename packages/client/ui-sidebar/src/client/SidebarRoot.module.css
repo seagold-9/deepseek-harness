@@ -7,15 +7,15 @@
    mid-slide. */
 
 .root {
-  --dsh-sidebar-inline-padding: 12px;
+  --dsh-sidebar-inline-padding: 8px;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 6px var(--dsh-sidebar-inline-padding);
+  padding: 4px var(--dsh-sidebar-inline-padding);
   box-sizing: border-box;
   background: var(--dsw-specific-sidebar-fill);
   color: var(--dsw-alias-label-primary);
-  font-size: 14px;
+  font-size: 13px;
   /* The sidebar is elevated above the conversation surface, so a revealed
      scrollbar uses the l2 pair. .quietBars hides it without changing layout. */
   --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
@@ -26,7 +26,7 @@
    rail (10px side padding), 12px vertical rhythm, 18px from the rail top to
    the whale's box (24px to the 24-wide whale glyph itself). */
 .root.collapsed {
-  padding: 18px 10px 6px;
+  padding: 8px 4px 4px;
 }
 
 /* Scrollbars in the column are a pointer affordance: the shell adds this
@@ -93,17 +93,17 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  height: 60px;
-  padding: 8px 0 8px 4px;
-  margin-bottom: 8px;
+  height: 40px;
+  padding: 4px 0 4px 2px;
+  margin-bottom: 4px;
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .collapsed .logoRow {
-  height: 36px;
+  height: 32px;
   padding: 0;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   justify-content: flex-start;
 }
 
@@ -132,7 +132,7 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 50%;
+  border-radius: 5px;
   padding: 0;
   background: transparent;
   cursor: pointer;
@@ -144,8 +144,8 @@
 }
 
 .collapsed .iconButton {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 }
 
 /* Rail logo swap: collapsed, the toggle rests as the whale mark (brand ink,
@@ -177,17 +177,17 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 38px;
-  padding: 8px 16px;
-  margin: 0 2px 8px;
+  height: 32px;
+  padding: 5px 10px;
+  margin: 0 0 6px;
   box-sizing: border-box;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
-  background: var(--dsw-alias-button-elevated-fill);
+  border-radius: 6px;
+  background: transparent;
   color: var(--dsw-alias-label-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 22px;
+  line-height: 20px;
   cursor: pointer;
   overflow: hidden;
 }
@@ -198,10 +198,10 @@
 
 .collapsed .newSession {
   align-self: flex-start;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   gap: 0;
   border-color: transparent;
   background: transparent;

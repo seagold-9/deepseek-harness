@@ -9,10 +9,10 @@
 // their branch action is enabled only when the node is also the completed
 // turn's transcript tail. Think / tool-head-only nodes stay chrome-free.
 
-import { memo, useMemo } from 'react'
-import type { ReactNode } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-runtime/client'
-import { JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconCheckOutline16, JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives'
 import { ImageGallery, type ImageLoader } from '@deepseek-ai/dsh-client-ui-attachment'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
@@ -29,14 +29,20 @@ export interface AssistantMarkdownProps {
   loadImage?: ImageLoader
   /** Resolved prose file mentions for this Assistant's closing turn. */
   mentions?: MarkdownFileMentions | undefined
+  /** Append a quoted response selection and its comment to the composer. */
+  appendAnnotation?: ((text: string) => void) | undefined
   /** The owning view's locale seat, passed down as a plain prop. */
   t: ChatViewSlotProps['t']
 }
 
 /** Reasoning block as the Think variant summary row (figma 39:28304). */
 export const AssistantMarkdown = memo(function AssistantMarkdown({
-  blocks, streaming, interrupted, loadImage, mentions, t,
+  blocks, streaming, interrupted, loadImage, mentions, appendAnnotation, t,
 }: AssistantMarkdownProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const editorRef = useRef<HTMLDivElement | null>(null)
+  const [annotation, setAnnotation] = useState<{ text: string; left: number; top: number } | null>(null)
+  const [comment, setComment] = useState('')
   const imageLoader = loadImage ?? (() => Promise.reject(new Error(t('image.serviceUnavailable'))))
   // Stable per locale revision (t identity changes on switch): a fresh object
   // per render would rebuild MarkdownText's component table every chunk.
@@ -48,6 +54,63 @@ export const AssistantMarkdown = memo(function AssistantMarkdown({
   const hasVisible = streaming
     || interrupted === true
     || blocks.some(block => block.kind !== 'tool-call')
+
+  const captureSelection = useCallback((): void => {
+    const root = rootRef.current
+    const selection = window.getSelection()
+    if (appendAnnotation === undefined || root === null || selection === null || selection.rangeCount === 0) return
+    const anchor = selection.anchorNode
+    const focus = selection.focusNode
+    const text = selection.toString().trim()
+    if (anchor === null || focus === null || text === '' || !root.contains(anchor) || !root.contains(focus)) return
+    const rect = selection.getRangeAt(0).getBoundingClientRect()
+    const width = Math.min(320, window.innerWidth - 24)
+    const left = Math.min(Math.max(12, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 12)
+    const editorHeight = 104
+    const top = rect.bottom + editorHeight + 12 <= window.innerHeight
+      ? rect.bottom + 8
+      : Math.max(12, rect.top - editorHeight - 8)
+    setComment('')
+    setAnnotation({ text, left, top })
+  }, [appendAnnotation])
+
+  useEffect(() => {
+    if (annotation === null) return
+    const dismiss = (event: MouseEvent): void => {
+      if (!editorRef.current?.contains(event.target as Node)) setAnnotation(null)
+    }
+    const dismissOnScroll = (): void => { setAnnotation(null) }
+    document.addEventListener('mousedown', dismiss)
+    window.addEventListener('scroll', dismissOnScroll, true)
+    window.addEventListener('resize', dismissOnScroll)
+    return () => {
+      document.removeEventListener('mousedown', dismiss)
+      window.removeEventListener('scroll', dismissOnScroll, true)
+      window.removeEventListener('resize', dismissOnScroll)
+    }
+  }, [annotation])
+
+  const confirmAnnotation = useCallback((): void => {
+    if (annotation === null || appendAnnotation === undefined || comment.trim() === '') return
+    const quote = annotation.text.split(/\r?\n/).map(line => `> ${line}`).join('\n')
+    appendAnnotation(`${quote}\n\n${t('annotation.comment')}: ${comment.trim()}`)
+    window.getSelection()?.removeAllRanges()
+    setAnnotation(null)
+    setComment('')
+  }, [annotation, appendAnnotation, comment, t])
+
+  const onAnnotationKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>): void => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      setAnnotation(null)
+      return
+    }
+    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+      event.preventDefault()
+      confirmAnnotation()
+    }
+  }
+
   if (!hasVisible) return null
   const rendered: ReactNode[] = []
   for (let i = 0; i < blocks.length; i++) {
@@ -100,11 +163,44 @@ export const AssistantMarkdown = memo(function AssistantMarkdown({
     }
   }
   return (
-    <div className={css.root} data-streaming={streaming || undefined}>
+    <div
+      ref={rootRef}
+      className={css.root}
+      data-streaming={streaming || undefined}
+      onMouseUp={captureSelection}
+      onKeyUp={captureSelection}
+    >
       <div className={css.body}>
         {rendered}
         {interrupted && <span className={css.stopped}>{t('message.stopped')}</span>}
       </div>
+      {annotation !== null && (
+        <div
+          ref={editorRef}
+          className={css.annotationEditor}
+          data-annotation-editor=""
+          style={{ left: annotation.left, top: annotation.top }}
+        >
+          <textarea
+            autoFocus
+            value={comment}
+            rows={2}
+            placeholder={t('annotation.placeholder')}
+            aria-label={t('annotation.placeholder')}
+            onChange={(event) => { setComment(event.target.value) }}
+            onKeyDown={onAnnotationKeyDown}
+          />
+          <button
+            type="button"
+            aria-label={t('annotation.confirm')}
+            title={t('annotation.confirm')}
+            disabled={comment.trim() === ''}
+            onClick={confirmAnnotation}
+          >
+            <IconCheckOutline16 />
+          </button>
+        </div>
+      )}
     </div>
   )
 })

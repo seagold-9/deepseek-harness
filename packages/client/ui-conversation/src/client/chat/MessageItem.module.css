@@ -5,26 +5,27 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px;
 }
 
 .userStack {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
-  max-width: min(525px, 82%);
+  max-width: min(620px, 78%);
 }
 .bubble {
   /* 525px cap inside the 736 column; percentage keeps narrow windows sane. */
   max-width: 100%;
-  background: var(--dsw-specific-bubble);
-  border-radius: 22px;
-  /* 44px single-line bubble: 24 line + 10 vertical padding each side. */
-  padding: 10px 16px;
-  font-size: 16px;
-  line-height: 24px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-right: 2px solid var(--dsw-alias-border-l3);
+  border-radius: 6px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--dsw-alias-label-primary);
 }
 
@@ -96,8 +97,8 @@
 
 .compactionTitle {
   flex: none;
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--dsw-alias-label-primary-dimmed);
 }
 
@@ -115,8 +116,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 12px;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -124,8 +125,8 @@
 .compactionBody {
   padding: 4px 0 4px 22px;
   color: var(--dsw-alias-label-tertiary);
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .retryRow {
@@ -275,7 +276,7 @@
   margin: 0 2px;
   padding: 0 8px;
   border-radius: 6px;
-  background: rgba(97, 135, 216, 0.22);
+  background: var(--dsw-alias-interactive-bg-hover-solid);
   color: var(--dsw-alias-label-primary);
   font-size: 0.85em;
   line-height: 1.6;

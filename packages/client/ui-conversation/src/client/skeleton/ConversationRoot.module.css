@@ -19,29 +19,24 @@
      the input card clears the bare clearance, so the input card stays exactly
      content + 32px at every width. Declared on the root because the
      transcript and the composer seat are sibling subtrees. */
-  --dsh-chat-content-width: 748px;
-  --dsh-composer-card-max-width: calc(var(--dsh-chat-content-width) + 32px);
-  --dsh-composer-side-clearance: 16px;
+  --dsh-chat-content-width: 860px;
+  --dsh-composer-card-max-width: var(--dsh-chat-content-width);
+  --dsh-composer-side-clearance: 12px;
   --dsh-composer-dock-inset: 8px;
 }
 
 .header {
   position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
   flex: none;
-  padding: 12px 28px 0 20px;
-  border-bottom: 1px solid transparent;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
 }
 
 .header::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 1px;
-  left: 0;
-  z-index: 0;
-  height: 1px;
-  background: var(--dsw-alias-border-l2);
-  pointer-events: none;
+  display: none;
 }
 
 /* Blank hero/settling: keep the strict Session header mounted without taking
@@ -54,14 +49,16 @@
   display: flex;
   align-items: center;
   gap: 0;
-  min-height: 32px;
+  min-height: 40px;
+  flex: 1;
+  min-width: 0;
 }
 
 .titleCluster {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -84,19 +81,19 @@
 .crumbSep {
   /* figma: "/" separators are 14px caption gray (75:7903), one tint lighter than crumb text. */
   color: var(--dsw-alias-label-caption);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .crumb {
   max-width: 220px;
   overflow: hidden;
-  padding: 4px 8px;
+  padding: 2px 5px;
   border: none;
-  border-radius: 12px;
+  border-radius: 4px;
   background: transparent;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--dsw-alias-label-tertiary);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -117,15 +114,15 @@
   display: flex;
   flex: none;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .headerUtilities {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 8px;
-  margin-left: 20px;
+  gap: 4px;
+  margin-left: 8px;
 }
 
 .headerUtilities:empty {
@@ -137,19 +134,23 @@
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 36px;
-  margin-top: 4px;
-  padding-left: 8px;
+  align-self: stretch;
+  flex: none;
+  align-items: center;
+  gap: 18px;
+  margin: 0 8px 0 16px;
+  padding: 0;
 }
 
 /* figma .Tab 34:11442: 13/16 text (figma wt510, rendered 500), gap 8 to the 2px bar. */
 .tab {
   position: relative;
-  padding: 0 0 11px;
+  height: 40px;
+  padding: 0 1px;
   border: none;
   background: transparent;
   font-size: 13px;
-  line-height: 16px;
+  line-height: 18px;
   font-weight: 500;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
@@ -159,7 +160,7 @@
   content: '';
   position: absolute;
   right: 0;
-  bottom: 1px;
+  bottom: 0;
   left: 0;
   height: 2px;
   border-radius: 2px;
@@ -170,11 +171,11 @@
    this token sheet, so the selected state rides the business blue — the
    nearest semantic token that stays blue in both themes. */
 .tabActive {
-  color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary);
 }
 
 .tabActive::after {
-  background: var(--dsw-alias-state-business-primary);
+  background: var(--dsw-alias-label-primary);
 }
 
 .viewArea {
@@ -208,7 +209,7 @@
      the seat because it is the chain's only shared ancestor — fallback and
      elected overlay are siblings — and custom properties inherit down to
      whichever entry is mounted. */
-  --dsh-composer-text-max-height: 336px;
+  --dsh-composer-text-max-height: 260px;
 }
 
 /* Active phase: header is ordinary column chrome above the scrollport (not
@@ -260,11 +261,7 @@
      region and the fade band never stretches. The 0px stop is bg-base at
      zero alpha (not white, which the figma export hardcodes) so both themes
      fade from their own base. */
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--dsw-alias-bg-base) 0%, transparent) 0px,
-    var(--dsw-alias-bg-base) 36px
-  );
+  background: linear-gradient(180deg, transparent 0, var(--dsw-alias-bg-base) 24px);
 }
 
 /* Views may opt into a composer overlay while ConversationRoot retains
@@ -311,16 +308,13 @@
    NOT absolute+transform: a transform would make this box the containing
    block for position:fixed descendants (pickers/modals), shrinking them. */
 .composerHero {
-  position: relative; /* .heroGlow positioning context */
-  align-self: center;
+  position: relative;
+  align-self: stretch;
   /* figma 75:8208 drew 12 between all three rows; the workspace row now sits
      8 above the card (its margin-top restores 12 under the hero chrome). */
-  gap: 8px;
-  /* Foot inside the centered box floats the stack a bit above true center. */
-  padding-bottom: 32px;
-  /* Card cap + both clearances: the hero input card lands at exactly the same
-     width as the docked composer at every viewport. */
-  width: min(calc(var(--dsh-composer-card-max-width) + 2 * var(--dsh-composer-side-clearance)), 100%);
+  gap: 4px;
+  padding-bottom: 0;
+  width: 100%;
   z-index: 1;
 }
 
@@ -330,14 +324,7 @@
    vs design card 776) so blur scales in userSpace with it. z-index -1 keeps
    it behind the in-flow hero content inside this stacking context. */
 .heroGlow {
-  position: absolute;
-  left: 50%;
-  bottom: 92px;
-  z-index: -1;
-  width: calc(100% * 1051 / 776);
-  aspect-ratio: 1051 / 468;
-  transform: translate(-50%, 50%);
-  pointer-events: none;
+  display: none;
 }
 
 .heroWorkspaceRow {
@@ -345,16 +332,27 @@
   align-items: center;
   gap: 2px;
   min-width: 0;
-  margin-top: 4px;
+  align-self: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--dsh-composer-card-max-width);
+  margin-top: 0;
   /* figma drew px 8; nudged +12 so the chip's folder glyph lines up closer to
      the card's inner controls below. */
-  padding-left: 20px;
+  padding: 0 10px;
+}
+
+.emptyIdentity {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  place-items: center;
 }
 
 /* Hero: the composer sits inside the session scroll body; center there so
    the tree seat matches active (sticky footer) without a Root remount. */
 .root[data-phase='hero'] .scrollBody {
-  justify-content: center;
+  justify-content: flex-end;
   overflow-y: auto;
 }
 

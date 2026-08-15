@@ -18,12 +18,12 @@
 
 .code {
   margin: 0;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 10px;
+  border-radius: 6px;
   background: var(--dsw-alias-markdown-code-block);
   font-family: var(--ds-font-family-code);
-  font-size: 13px;
-  line-height: 22px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--dsw-alias-label-primary);
   white-space: pre-wrap;
   word-break: break-word;

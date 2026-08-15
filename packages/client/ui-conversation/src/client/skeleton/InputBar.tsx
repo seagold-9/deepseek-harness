@@ -697,6 +697,7 @@ export function InputBar({
           <div className={css.grow}>
             <div aria-hidden className={css.backdrop} data-input-backdrop>{backdrop}</div>
             <textarea
+              data-composer-input={sessionId}
               ref={inputRef}
               className={css.input}
               value={draft}

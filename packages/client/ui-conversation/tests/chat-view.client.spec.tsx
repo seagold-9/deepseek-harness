@@ -155,6 +155,7 @@ function makeHarness(init?: Partial<ConversationSnapshot>) {
   const openFile = vi.fn<(path: string) => void>()
   const loadOlder = vi.fn()
   const inspectCall = vi.fn<(callId: string) => void>()
+  const appendAnnotation = vi.fn<(text: string) => void>()
   // In-memory scroll memory matching the apply.ts per-session map contract.
   let savedScroll: ReturnType<ChatViewSlotProps['chatScroll']['read']> = null
   const chatScroll: ChatViewSlotProps['chatScroll'] = {
@@ -289,13 +290,14 @@ function makeHarness(init?: Partial<ConversationSnapshot>) {
     forkAt,
     // Absent-service default; mention tests override with a real resolver.
     fileMentions: () => undefined,
+    appendAnnotation,
     // Mirrors the real lookup chain (conversation namespace, then common).
     t,
   }
   const setSelection = (next: SelectionTarget | null): void => { chat.actions.select(next) }
   return {
     set, ChatView, props, openDetails, openFile, loadOlder, inspectCall,
-    chatScroll, forkAt, setSelection, toolOwners,
+    chatScroll, forkAt, appendAnnotation, setSelection, toolOwners,
   }
 }
 
@@ -817,6 +819,30 @@ describe('ChatView', () => {
     })
     expect(view.getByText('已停止')).toBeTruthy()
     expect(view.container.querySelectorAll('h1')).toHaveLength(2)
+  })
+
+  it('adds a comment on selected assistant text to the composer draft', () => {
+    const h = makeHarness({ nodes: [assistant(1, 'Keep this exact phrase in context.')] })
+    const view = render(<h.ChatView {...h.props} />)
+    const answer = view.getByText('Keep this exact phrase in context.')
+    const text = answer.firstChild!
+    const range = document.createRange()
+    range.setStart(text, 5)
+    range.setEnd(text, 22)
+    Object.defineProperty(range, 'getBoundingClientRect', {
+      value: () => ({ left: 100, right: 220, top: 80, bottom: 102, width: 120, height: 22 }),
+    })
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(answer)
+    const editor = view.getByRole('textbox', { name: '写下对这段内容的批注' })
+    fireEvent.change(editor, { target: { value: '这里需要更具体。' } })
+    fireEvent.keyDown(editor, { key: 'Enter' })
+
+    expect(h.appendAnnotation).toHaveBeenCalledWith('> this exact phrase\n\n批注: 这里需要更具体。')
+    expect(view.queryByRole('textbox', { name: '写下对这段内容的批注' })).toBeNull()
   })
 
   it('streaming partial frames update the tail without replacing a sibling Tool row', () => {

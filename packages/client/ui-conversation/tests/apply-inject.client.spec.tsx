@@ -230,6 +230,30 @@ describe('conversation slot inject API', () => {
     await b.runtime.dispose()
   })
 
+  it('appends response annotations to the addressed session draft and focuses its composer', async () => {
+    const b = await bench()
+    const { injected } = b.chatViewApi(ROOT)
+    const { state, actions } = b.inputApi(ROOT)
+    actions.setDraft('existing question')
+    const composer = document.createElement('textarea')
+    composer.dataset.composerInput = ROOT
+    composer.value = 'existing question\n\n> selected text\n\n批注: explain this'
+    document.body.append(composer)
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+
+    injected.appendAnnotation('> selected text\n\n批注: explain this')
+
+    expect(state.getSnapshot().draft).toBe('existing question\n\n> selected text\n\n批注: explain this')
+    expect(document.activeElement).toBe(composer)
+    expect(composer.selectionStart).toBe(composer.value.length)
+    composer.remove()
+    vi.unstubAllGlobals()
+    await b.runtime.dispose()
+  })
+
   it('openFile (chat view face) resolves against session cwd and calls workspaces.openPath', async () => {
     const b = await bench()
     const { injected } = b.chatViewApi(ROOT)

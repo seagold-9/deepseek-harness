@@ -364,6 +364,8 @@ export interface ChatNodeOwnerProps {
   /** Resolve a session-authorized historical image for inline display. */
   loadImage: (attachment: ImageAttachmentRef) => Promise<string>
   fileMentions: (owner: TurnTailOwnerProps) => MarkdownFileMentions | undefined
+  /** Append a response annotation to the active session's composer draft. */
+  appendAnnotation?: ((text: string) => void) | undefined
 }
 
 /** Full props of one registered keyed Chat business renderer. */
@@ -705,6 +707,8 @@ export interface ChatViewInjected {
    * absent or the turn produced nothing worth linking.
    */
   fileMentions: (owner: TurnTailOwnerProps) => MarkdownFileMentions | undefined
+  /** Append a response annotation to this session's composer draft and focus it. */
+  appendAnnotation: (text: string) => void
 }
 
 /** Full chat-view component props: runtime & its Tool/command/tail render shares & store & injected & locale seat. */

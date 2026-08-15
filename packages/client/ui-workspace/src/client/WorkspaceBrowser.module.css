@@ -46,11 +46,11 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  height: 36px;
+  height: 30px;
   padding-left: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   box-sizing: border-box;
-  border-radius: 12px;
+  border-radius: 5px;
   overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
 }
@@ -143,7 +143,7 @@
   padding: 0;
   box-sizing: border-box;
   border: none;
-  border-radius: 50%;
+  border-radius: 5px;
   background: transparent;
   cursor: text;
   color: var(--dsw-alias-label-secondary);
@@ -161,7 +161,7 @@
   margin-inline: -2px;
   padding: 0 4px 0 0;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 10px;
+  border-radius: 5px;
   background: transparent;
   color: var(--dsw-alias-label-caption);
 }
@@ -174,7 +174,7 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 50%;
+  border-radius: 5px;
   padding: 0;
   background: transparent;
   cursor: pointer;
@@ -227,7 +227,7 @@
   width: 24px;
   height: 24px;
   border: none;
-  border-radius: 50%;
+  border-radius: 4px;
   padding: 0;
   background: transparent;
   cursor: pointer;
@@ -245,7 +245,7 @@
 .rail .sectionHeader {
   gap: 0;
   padding-left: 0;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   justify-content: flex-start;
 }
 
@@ -254,24 +254,24 @@
 }
 
 .rail .iconButton {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   color: var(--dsw-alias-label-primary);
 }
 
 .rail .search {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   gap: 0;
   border-color: transparent;
   background: transparent;
 }
 
 .rail .searchButton {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   color: var(--dsw-alias-label-primary);
 }
 
@@ -354,7 +354,7 @@
 .flatList > * + *,
 .searchTree > [role='treeitem'] + [role='treeitem'],
 .groupSection > * + * {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .searchStatus,
@@ -375,7 +375,7 @@
 }
 
 .groupSection + .groupSection {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .listTopDropIndicator,

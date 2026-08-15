@@ -28,8 +28,8 @@ function declarations(selector: string): Map<string, string> | undefined {
 describe('SidebarRoot.module.css', () => {
   it('shares and cancels the wide shell trailing padding structurally', () => {
     const root = declarations('.root')
-    expect(root?.get('--dsh-sidebar-inline-padding')).toBe('12px')
-    expect(root?.get('padding')).toBe('6px var(--dsh-sidebar-inline-padding)')
+    expect(root?.get('--dsh-sidebar-inline-padding')).toBe('8px')
+    expect(root?.get('padding')).toBe('4px var(--dsh-sidebar-inline-padding)')
     expect(declarations('.regionArea')?.get('margin-left')).toBe('-4px')
     expect(declarations('.regionArea')?.get('padding-left')).toBe('4px')
     expect(declarations('.regionArea')?.get('margin-right')).toBe(
@@ -61,6 +61,6 @@ describe('SidebarRoot.module.css', () => {
   it('gives shell rail controls the same base anchor for their shared translation', () => {
     expect(declarations('.collapsed .logoRow')?.get('justify-content')).toBe('flex-start')
     expect(declarations('.collapsed .newSession')?.get('align-self')).toBe('flex-start')
-    expect(declarations('.collapsed .newSession')?.get('width')).toBe('36px')
+    expect(declarations('.collapsed .newSession')?.get('width')).toBe('32px')
   })
 })

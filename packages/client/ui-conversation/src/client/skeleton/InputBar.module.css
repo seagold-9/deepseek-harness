@@ -25,14 +25,14 @@
      the sides narrow with the shared width axis); the bottom gradient mask
      is owned by the chat scroller. No top pad: the composer stack's gap owns
      the space above; error/status strips still carry their own margin. */
-  padding: 0 var(--dsh-composer-side-clearance) 8px;
+  padding: 0 var(--dsh-composer-side-clearance) 6px;
 }
 
 .hero {
   /* No bottom pad in the centered hero, but the side clearance must survive:
      the hero wrapper is full-width on narrow viewports, so this padding is
      the only thing keeping the card off the edges there. */
-  padding: 0 var(--dsh-composer-side-clearance);
+  padding: 0 var(--dsh-composer-side-clearance) 8px;
 }
 
 .notice {
@@ -59,19 +59,19 @@
   flex-direction: column;
   /* figma Input 75:8208: 12px between the text area and the button row; 10px
      top pad on the card before .InputText. */
-  gap: 12px;
+  gap: 6px;
   width: 100%;
   max-width: var(--dsh-composer-card-max-width);
-  padding-top: 10px;
+  padding-top: 6px;
   /* Input stroke: black/0.10 light, white/0.06 dark (figma darkmode note says
      the input border is one notch weaker than buttons) — exactly the
      l2-darkmode-thin pair. Fill: the input surface token (elevated in dark). */
   border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
-  border-radius: 22px;
-  background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
-  font-size: 16px;
-  line-height: 24px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  font-size: 13px;
+  line-height: 20px;
   /* Elevated surface in dark, same as the menus: the draft scrollport inside
      scrolls once the composer hits its height cap, so the thumb takes the l2
      pair. Declared on the card because the elevation belongs to the surface,
@@ -96,11 +96,11 @@
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--dsw-alias-border-l4);
   transition: background-color 100ms ease;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='22' ry='22' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='22' ry='22' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
   pointer-events: none;
 }
 
@@ -118,8 +118,8 @@
 .accessory {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px 0;
+  gap: 6px;
+  padding: 6px 10px 0;
 }
 
 /* Rail seat: the card's top padding (10px) plus this 4px matches DeepSeek
@@ -128,7 +128,7 @@
    ui-attachment atom's. */
 .attachments {
   min-width: 0;
-  padding: 4px 12px 0;
+  padding: 2px 10px 0;
 }
 
 /* Floating overlay anchor (menu / popupSelect shell): entries position
@@ -227,7 +227,7 @@
   box-sizing: border-box;
   /* figma .InputText 34:10434: pl 16 / pr 12 / pt 4. Backdrop MUST share these
      metrics or the highlight ranges drift off the glyphs. */
-  padding: 4px 12px 0 16px;
+  padding: 2px 10px 0;
   /* DshChipCell first: ONLY U+FFFC resolves there (4em blank cell — the chip
      slot); everything else falls through to the app stack. All three layers
      share the stack, so placeholder advances agree by construction. */
@@ -277,7 +277,7 @@
 /* Hero (centered empty-state) keeps the 2-line floor (figma min-h 52 = ~2 × 24
    line + 4pt); the docked composer collapses to the content height. */
 .hero .mirror {
-  min-height: 52px;
+  min-height: 40px;
 }
 
 /* Toolbar: attach + Plan + Read-only on the left; model + send on the right
@@ -286,11 +286,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   /* 2px moved from the bottom pad to the top: the whole control row sits 2px
      lower in the card (it read too high against the textarea) while the card
      height and the controls' own centering stay untouched. */
-  padding: 2px 8px 6px;
+  padding: 0 6px 5px;
   min-width: 0;
   /* Size container so the chips inside can collapse to icon-only when the
      card runs out of row width (PermissionSelect @container rule). Anonymous
@@ -311,16 +311,16 @@
    Read-only; the chip gap widened to 12 so the pill chips read as separate
    controls. */
 .tools {
-  gap: 16px;
+  gap: 8px;
 }
 
 .modes {
-  gap: 12px;
+  gap: 6px;
 }
 
 .trailing {
   flex: none;
-  gap: 12px;
+  gap: 6px;
 }
 
 /* Attach circle (figma + control): 28px, selector fill, primary glyph. */
@@ -331,8 +331,8 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 999px;
-  background: var(--dsw-specific-selector);
+  border-radius: 6px;
+  background: transparent;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
 }
@@ -353,7 +353,7 @@
   height: 28px;
   padding: 0 20px 0 8px;
   border: none;
-  border-radius: 8px;
+  border-radius: 5px;
   outline: none;
   background-color: transparent;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2381858C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -385,11 +385,11 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 999px;
-  background: var(--dsw-alias-button-info-fill);
+  border-radius: 6px;
+  background: var(--dsw-alias-button-primary-fill);
   /* Static white, not the foreground token: the arrow stays white on the blue
      fill in both themes (design 34:10465). */
   color: #fff;
@@ -398,11 +398,11 @@
   /* Opts out of the row's 2px downward shift (.row top pad): the send circle
      keeps its original seat while the smaller chips sit lower. Transform, not
      margin, so flex centering math is untouched. */
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-info-hover);
+  background: var(--dsw-alias-button-primary-hover);
 }
 
 .primary:disabled {
@@ -444,7 +444,7 @@
 .chip {
   position: relative;
   border-radius: 6px;
-  background: rgba(97, 135, 216, 0.22);
+  background: var(--dsw-alias-interactive-bg-hover-solid);
 }
 
 .chip::before {

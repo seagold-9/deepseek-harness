@@ -17,7 +17,7 @@
   overflow-y: auto;
   /* Sides = composer clearance + 16px: on narrow viewports the transcript
      stays exactly 32px narrower than the input card (the shared width rule). */
-  padding: 16px calc(var(--dsh-composer-side-clearance) + 16px);
+  padding: 14px calc(var(--dsh-composer-side-clearance) + 8px);
 }
 
 :global([data-conversation-scroll]) .root {
@@ -41,7 +41,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 /* Settled-flow identity boundary. It is neutral today and becomes the natural
@@ -132,12 +132,12 @@
 }
 
 .older button {
-  border: none;
-  border-radius: 14px;
-  padding: 4px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 5px;
+  padding: 3px 8px;
   font-size: 12px;
   color: var(--dsw-alias-label-secondary);
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+  background: transparent;
   cursor: pointer;
 }
 
@@ -174,15 +174,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin-top: -34px;
+  width: 28px;
+  height: 28px;
+  margin-top: -28px;
   padding: 0;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 100px;
+  border-radius: 6px;
   color: var(--dsw-alias-label-primary);
   background: var(--dsw-alias-button-floating-fill);
-  box-shadow: var(--dsw-shadow-lv2);
+  box-shadow: var(--dsw-shadow-lv1);
   cursor: pointer;
   pointer-events: auto;
 }

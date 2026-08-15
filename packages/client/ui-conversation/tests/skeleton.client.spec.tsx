@@ -348,7 +348,7 @@ describe('ConversationRoot resident composer', () => {
     expect(seat?.contains(fallback)).toBe(true)
   })
 
-  it('hero phase: same textarea, hero chrome, no header, picker switches the workspace', () => {
+  it('blank phase: identity, same textarea, no header, picker switches the workspace', () => {
     const b = mount(
       conversationSnapshot({ composerPhase: 'blank', blank: true }),
       [
@@ -356,7 +356,7 @@ describe('ConversationRoot resident composer', () => {
         { ...workspace('second'), title: 'Selected Folder' },
       ],
     )
-    // Hero chrome present, view ring absent; scroll host already wraps the
+    // View ring absent; the scroll host already wraps the bottom composer so
     // resident composer so the blank → active flip does not remount it.
     const host = b.view.container.querySelector('[data-conversation-scroll]')
     const header = b.view.container.querySelector('header')

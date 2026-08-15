@@ -12,7 +12,7 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  height: 24px;
+  height: 22px;
   min-width: 0;
 }
 
@@ -63,7 +63,7 @@ button.leading {
 
 .title {
   flex: none;
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--dsw-alias-label-secondary);
 }

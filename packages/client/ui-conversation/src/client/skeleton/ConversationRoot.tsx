@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import type { WorkspaceId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConversationSlotProps, InputZone } from '../contract/slots.ts'
-import { HeroGlow, HeroShell, WorkspaceChip, workspaceLabel } from './EmptyHero.tsx'
+import { HeroShell, WorkspaceChip, workspaceLabel } from './EmptyHero.tsx'
 import css from './ConversationRoot.module.css'
 
 /** Full props composed from the slot contract. */
@@ -158,8 +158,6 @@ export function ConversationRoot({
 
   const composerBar = (
     <div className={clsx(css.composerStack, hero && css.composerHero)}>
-      {hero && <HeroGlow className={css.heroGlow} />}
-      {hero && <HeroShell t={t} />}
       {hero && heroWorkspaceRow}
       {zone !== undefined && renderSlot('conversation.input.dock', zone)}
       {inputBar}
@@ -187,6 +185,7 @@ export function ConversationRoot({
     <div className={css.root} data-phase={phase}>
       {renderSlot('conversation.session.header', {})}
       <div className={css.scrollBody} data-conversation-scroll="">
+        {hero && <div className={css.emptyIdentity}><HeroShell t={t} /></div>}
         {renderSlot('conversation.session', {})}
         {composerSeat}
       </div>
