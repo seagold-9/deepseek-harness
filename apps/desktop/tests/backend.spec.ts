@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { backendUrlFromLine, OutputLines, redactDiagnostic } from '../src/backend.ts'
+import { backendEnvironment, backendUrlFromLine, OutputLines, redactDiagnostic } from '../src/backend.ts'
 
 describe('desktop backend output', () => {
   it('finds a dynamic loopback URL across process output chunks', () => {
@@ -21,5 +21,17 @@ describe('desktop backend output', () => {
     expect(redactDiagnostic('Authorization: Bearer secret-value\napi_key=sk-example123456789')).toBe(
       'Authorization: [redacted] [redacted]\napi_key=[redacted]',
     )
+  })
+
+  it('pins the backend to the desktop Harness home', () => {
+    expect(backendEnvironment('C:\\Users\\person\\.dsh', {
+      DSH_HOME: 'C:\\temporary',
+      EXAMPLE: 'kept',
+      NO_COLOR: '0',
+    })).toEqual({
+      DSH_HOME: 'C:\\Users\\person\\.dsh',
+      EXAMPLE: 'kept',
+      NO_COLOR: '1',
+    })
   })
 })

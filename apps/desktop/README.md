@@ -8,7 +8,7 @@ The desktop app packages the official DSH Web profile behind a restricted Electr
 
 Electron owns the window and process lifecycle. A bundled `node.exe` runs the ordinary built `dsh web --host 127.0.0.1 --port 0` entry, so the backend remains the official Web composition rather than a desktop-specific fork. The desktop runtime manifest at [`../desktop-runtime/package.json`](../desktop-runtime/package.json) closes the production dependency set, including required peer dependencies.
 
-User profiles, sessions, settings, and credential references remain under the ordinary DSH home directory (`~/.dsh`). Electron browser state is separate under the OS application-data directory. The app does not copy API keys into its installation directory or repository.
+The shell explicitly starts the backend with `DSH_HOME` set to the ordinary user directory (`~/.dsh`). User profiles, sessions, settings, and credential references therefore survive application upgrades, replacement, and switching between the installed and portable packages. Electron browser state is separate under the OS application-data directory. The app does not copy API keys into its installation directory or repository.
 
 ## Development
 

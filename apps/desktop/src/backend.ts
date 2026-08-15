@@ -28,6 +28,8 @@ export interface BackendLauncherOptions {
   entry: string
   /** Working directory inherited by new DSH sessions. */
   cwd: string
+  /** Stable Harness home shared with ordinary DSH installations. */
+  dshHome: string
   /** Called only when a ready backend exits without a desktop stop request. */
   onUnexpectedExit: (failure: BackendFailure) => void
   /** Startup deadline; tests may supply a shorter value. */
@@ -82,6 +84,23 @@ export function redactDiagnostic(value: string): string {
     .replace(/((?:api[_-]?key|authorization)\s*[:=]\s*)[^\s,;]+/giu, '$1[redacted]')
 }
 
+/**
+ * Build the backend environment with the desktop data directory and plain diagnostics.
+ * @param dshHome - Stable Harness home selected by the desktop application.
+ * @param inherited - Parent environment inherited by the backend process.
+ * @returns Environment for the bundled DSH process.
+ */
+export function backendEnvironment(
+  dshHome: string,
+  inherited: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
+  return {
+    ...inherited,
+    DSH_HOME: dshHome,
+    NO_COLOR: '1',
+  }
+}
+
 /** Process owner with bounded startup and shutdown. */
 export class BackendLauncher {
   private child: ChildProcess | undefined
@@ -102,10 +121,7 @@ export class BackendLauncher {
 
     const child = spawn(this.options.executable, [this.options.entry, 'web', '--host', '127.0.0.1', '--port', '0'], {
       cwd: this.options.cwd,
-      env: {
-        ...process.env,
-        NO_COLOR: '1',
-      },
+      env: backendEnvironment(this.options.dshHome),
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     })

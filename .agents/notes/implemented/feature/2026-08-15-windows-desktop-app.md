@@ -14,6 +14,8 @@ Electron cannot also serve as the backend runtime. Electron 43 embeds Node.js 24
 
 [`apps/desktop`](../../../../apps/desktop/README.md) is a Windows x64 Electron shell over the official built `dsh web` entry. Electron owns only the window, navigation policy, single-instance lock, and backend lifecycle. A bundled standard Node.js `v24.14.0` executable runs the backend on `127.0.0.1` with port `0`; the shell reads the emitted URL and loads that origin. The desktop application does not fork the Web composition or introduce an IPC client implementation.
 
+The shell sets `DSH_HOME` to the user's ordinary `~/.dsh` directory for every backend launch. The installed and portable packages therefore share official DSH profiles, sessions, settings, and credential references without storing durable data under the application installation directory.
+
 The renderer uses Chromium sandboxing and context isolation with Node.js integration disabled. It has no preload bridge. Navigation remains on the launch-specific backend origin, external HTTP links open in the system browser, and permissions, downloads, new embedded windows, and webviews are denied.
 
 Closing the last window initiates application quit. Quit waits for graceful backend disposal, then terminates the owned Windows process tree after bounded deadlines. Startup diagnostics retain a bounded output tail, redact common credential forms before display, and expose a retry action without granting renderer access to the host.
@@ -44,6 +46,6 @@ Release verification starts the unpacked application from its packaged path, obs
 
 ## Consequences
 
-The desktop application follows Web-profile updates at the package and frontend build boundary: rebuilding the closed runtime and Electron resources carries the updated official composition without reimplementing it. User profiles and credentials remain in the ordinary DSH home and survive application upgrades or replacement.
+The desktop application follows Web-profile updates at the package and frontend build boundary: rebuilding the closed runtime and Electron resources carries the updated official composition without reimplementing it. User profiles, sessions, settings, and credential references remain in the ordinary DSH home and survive application upgrades or replacement.
 
 The distribution is Windows x64 only, pins one standard Node.js build, and is unsigned. Its unpacked application is large and contains tens of thousands of dependency files. Installation can be slow under Windows security scanning, while the portable executable repeats that extraction cost on every launch; the installed shortcut is the supported daily-use path. A future archive-and-cache design may reduce file-count overhead, but it must preserve the runtime closure check, atomic publication, version isolation, cleanup, and backend shutdown behavior recorded here.

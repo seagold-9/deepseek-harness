@@ -8,7 +8,7 @@
 
 Electron 负责窗口和进程生命周期。内置的 `node.exe` 运行常规构建产物中的 `dsh web --host 127.0.0.1 --port 0` 入口，因此后端仍然采用官方 Web 组合，而不是桌面客户端专用 fork。[`../desktop-runtime/package.json`](../desktop-runtime/package.json) 中的桌面运行时 manifest 闭合了生产依赖集合，其中包括必需的对等依赖（peer dependency）。
 
-用户 profile、会话、设置和凭据引用仍位于常规 DSH home 目录（`~/.dsh`）中。Electron 浏览器状态单独保存在操作系统的应用数据目录中。客户端不会把 API Key 复制到安装目录或仓库中。
+shell 会显式使用指向常规用户目录（`~/.dsh`）的 `DSH_HOME` 启动后端。因此，用户 profile、会话、设置和凭据引用会在应用升级、替换以及安装版与 Portable 包之间切换时继续保留。Electron 浏览器状态单独保存在操作系统的应用数据目录中。客户端不会把 API Key 复制到安装目录或仓库中。
 
 ## 开发
 

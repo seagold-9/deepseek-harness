@@ -102,6 +102,7 @@ async function startBackendOnce(): Promise<void> {
     executable: backendExecutablePath(),
     entry: cliEntryPath(),
     cwd: app.getPath('home'),
+    dshHome: desktopDshHome(),
     onUnexpectedExit: (failure) => { showBackendFailure(failure) },
   })
 
@@ -182,6 +183,10 @@ function cliEntryPath(): string {
 function backendExecutablePath(): string {
   if (app.isPackaged) return join(process.resourcesPath, 'runtime', 'node.exe')
   return process.platform === 'win32' ? 'node.exe' : 'node'
+}
+
+function desktopDshHome(): string {
+  return join(app.getPath('home'), '.dsh')
 }
 
 function iconPath(): string {

@@ -64,7 +64,7 @@ The window permits navigation only to the loopback origin created for that launc
 
 ## User data
 
-Official DSH keeps its data under `DSH_HOME`, which defaults to `~/.dsh`. The first desktop release should choose a stable, explicit Windows data directory for this distribution and set `DSH_HOME` when starting the child process. Freeze the final path during implementation after migration testing.
+Official DSH keeps its data under `DSH_HOME`. The desktop shell explicitly sets it to the user's ordinary `~/.dsh` directory when starting the child process. Installed and portable packages share that directory, and application upgrades or replacement do not remove it.
 
 Long-lived data includes sessions, settings, profiles, attachments, and user plugin configuration. The official credential mechanism currently stores API Keys in `$DSH_HOME/.credentials.yaml`, and the first desktop release continues to use it.
 
@@ -98,6 +98,5 @@ See the [upstream update procedure](upstream-update.md) for handling official up
 
 - The most stable readiness probe and graceful-shutdown interface for the DSH Web service.
 - The complete packaged closure of plugins, native dependencies, and dynamic resources.
-- Whether the Windows installer and portable distribution share one `DSH_HOME` or isolate their data directories.
 - The actual protection of the official credential file on Windows and whether the system credential vault is needed.
 - Whether the official mark may be used for public distribution of an unofficial client.
