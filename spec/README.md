@@ -33,7 +33,7 @@ The project currently derives from the official DeepSeek Harness repository. Its
 
 ## Current facts
 
-- Source directory: `C:\Users\chenxiaojie\Documents\Codex\2026-08-14\handle\work\deepseek-harness`
+- Source directory: `D:\repos\deepseek-harness`
 - Current branch: `ui-experiment`
 - Current development URL: `http://127.0.0.1:3081/?ui-experiment=1`
 - Official repository: `https://github.com/deepseek-ai/deepseek-harness.git`

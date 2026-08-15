@@ -33,7 +33,7 @@
 
 ## 当前事实
 
-- 源码目录：`C:\Users\chenxiaojie\Documents\Codex\2026-08-14\handle\work\deepseek-harness`
+- 源码目录：`D:\repos\deepseek-harness`
 - 当前分支：`ui-experiment`
 - 当前开发入口：`http://127.0.0.1:3081/?ui-experiment=1`
 - 官方仓库：`https://github.com/deepseek-ai/deepseek-harness.git`
