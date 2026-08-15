@@ -18,7 +18,7 @@ The shell sets `DSH_HOME` to the user's ordinary `~/.dsh` directory for every ba
 
 The renderer uses Chromium sandboxing and context isolation with Node.js integration disabled. It has no preload bridge. Navigation remains on the launch-specific backend origin, external HTTP links open in the system browser, and permissions, downloads, new embedded windows, and webviews are denied.
 
-Closing the last window initiates application quit. Quit waits for graceful backend disposal, then terminates the owned Windows process tree after bounded deadlines. Startup diagnostics retain a bounded output tail, redact common credential forms before display, and expose a retry action without granting renderer access to the host.
+Closing the last window initiates application quit. Quit waits for graceful backend disposal, then terminates the owned Windows process tree after bounded deadlines. Backend startup uses a bounded failure-reporting deadline. Startup diagnostics retain a bounded output tail, redact common credential forms before display, and expose a retry action without granting renderer access to the host.
 
 ## Runtime distribution
 
@@ -28,7 +28,7 @@ Electron Builder receives `node.exe` and `node_modules` as separate explicit res
 
 ## Verification
 
-The backend launcher has focused tests for fragmented readiness output, URL validation, and diagnostic redaction. The package build performs strict TypeScript compilation and a runtime smoke test that starts the staged `node.exe`, waits for the dynamically assigned URL, requires an HTTP 200 response, and stops the process.
+The backend launcher has focused tests for fragmented readiness output, URL validation, and diagnostic redaction. The package build performs strict TypeScript compilation and a runtime smoke test that starts the staged `node.exe` with a private temporary Harness home, agent directory, and working directory, waits for the dynamically assigned URL, requires an HTTP 200 response, stops the process, and removes the temporary state. Build verification never initializes or repairs the build user's profiles.
 
 Release verification starts the unpacked application from its packaged path, observes one loopback listener owned by the bundled Node process, loads the real Web page, launches a second instance and observes only one main process and backend, closes the window, and observes no remaining owned process. The installer verification also requires registered uninstall metadata plus desktop and Start menu shortcuts.
 

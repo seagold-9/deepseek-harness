@@ -31,6 +31,8 @@ pnpm run desktop:dist
 
 The command compiles the shell, generates the whale icon, deploys a production-only runtime with no filesystem links, starts that runtime and requires an HTTP 200 response, then writes these files under `apps/desktop/release/`:
 
+Runtime verification uses a private temporary Harness home, agent directory, and working directory. It never initializes or repairs profiles under the build user's ordinary `~/.dsh`.
+
 | Artifact | Use |
 |---|---|
 | `dsh-Setup-0.1.0-rc.5-x64.exe` | Recommended installation with desktop and Start menu shortcuts. |

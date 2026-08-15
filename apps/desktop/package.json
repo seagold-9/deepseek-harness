@@ -16,7 +16,7 @@
     "build": "tsc -p tsconfig.build.json",
     "icon:build": "node scripts/render-icon.mjs",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run --root ../.. apps/desktop/tests/backend.spec.ts",
+    "test": "vitest run --root ../.. apps/desktop/tests/backend.spec.ts apps/desktop/tests/smoke-runtime.spec.ts",
     "dev": "pnpm run build && electron .",
     "runtime:prepare": "node scripts/prepare-runtime.mjs",
     "runtime:smoke": "node scripts/smoke-runtime.mjs",

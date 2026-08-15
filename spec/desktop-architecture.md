@@ -48,7 +48,7 @@ The window permits navigation only to the loopback origin created for that launc
 - Use the packaged Node.js runtime without depending on a user-installed Node.js, npm, or pnpm.
 - Bind the backend to `127.0.0.1` and never to a LAN address by default.
 - Allocate an available dynamic port at launch and pass it to the backend through process arguments to avoid fixed-port conflicts.
-- Show a local startup view until the health check succeeds instead of exposing a connection error page.
+- Show a local startup view until the health check succeeds instead of exposing a connection error page; report an unexpectedly stalled launch after a bounded deadline.
 - Retain the child-process handle and a one-time launch token so the application cannot kill a DSH instance started by the user.
 
 ## Electron security baseline

@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { backendEnvironment, backendUrlFromLine, OutputLines, redactDiagnostic } from '../src/backend.ts'
+import {
+  backendEnvironment,
+  backendUrlFromLine,
+  DEFAULT_STARTUP_TIMEOUT_MS,
+  OutputLines,
+  redactDiagnostic,
+} from '../src/backend.ts'
 
 describe('desktop backend output', () => {
+  it('bounds an unexpectedly stalled backend launch', () => {
+    expect(DEFAULT_STARTUP_TIMEOUT_MS).toBe(120_000)
+  })
+
   it('finds a dynamic loopback URL across process output chunks', () => {
     const lines = new OutputLines()
     expect(lines.push('booting\ndsh web: http://127.')).toEqual(['booting'])

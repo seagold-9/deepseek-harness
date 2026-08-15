@@ -3,7 +3,8 @@
 import { execFile, spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 
-const DEFAULT_STARTUP_TIMEOUT_MS = 30_000
+/** Failure-reporting deadline for an unexpectedly stalled packaged backend. */
+export const DEFAULT_STARTUP_TIMEOUT_MS = 120_000
 const GRACEFUL_SHUTDOWN_TIMEOUT_MS = 6_000
 const FORCED_SHUTDOWN_TIMEOUT_MS = 2_000
 const MAX_DIAGNOSTIC_CHARS = 16_384

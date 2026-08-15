@@ -31,6 +31,8 @@ pnpm run desktop:dist
 
 该命令会编译 shell、生成鲸鱼图标、部署不含文件系统链接的纯生产运行时、启动该运行时并要求获得 HTTP 200 响应，随后在 `apps/desktop/release/` 下写入以下文件：
 
+运行时验证使用独立的临时 Harness home、Agent 目录和工作目录，绝不会在构建用户常规的 `~/.dsh` 下初始化或修复 profile。
+
 | 产物 | 用途 |
 |---|---|
 | `dsh-Setup-0.1.0-rc.5-x64.exe` | 推荐的安装版本，包含桌面和开始菜单快捷方式。 |

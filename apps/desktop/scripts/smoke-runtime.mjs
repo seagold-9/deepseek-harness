@@ -2,75 +2,127 @@
 
 import { execFile, spawn } from 'node:child_process'
 import { once } from 'node:events'
+import { lstatSync, mkdirSync, mkdtempSync, readdirSync, rmSync, unlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const runtimeRoot = resolve(process.argv[2] ?? join(desktopRoot, '.runtime'))
-const executable = join(runtimeRoot, 'node.exe')
-const entry = join(runtimeRoot, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
 const readyLine = /(?:^|\s)dsh web: (http:\/\/127\.0\.0\.1:\d+)(?:\s|$)/u
 const startupTimeoutMs = 60_000
 const requestTimeoutMs = 10_000
 
-const child = spawn(executable, [entry, 'web', '--host', '127.0.0.1', '--port', '0'], {
-  cwd: desktopRoot,
-  env: { ...process.env, NO_COLOR: '1' },
-  stdio: ['ignore', 'pipe', 'pipe'],
-  windowsHide: true,
-})
+/**
+ * Create an isolated home and workspace for one staged-runtime verification.
+ * @param {NodeJS.ProcessEnv} inherited Environment inherited by the smoke process.
+ * @param {string} temporaryRoot Parent directory for the private temporary directory.
+ * @returns {{root: string, cwd: string, env: NodeJS.ProcessEnv, dispose: () => void}} The isolated launch state.
+ */
+export function createRuntimeSmokeSandbox(inherited = process.env, temporaryRoot = tmpdir()) {
+  const root = mkdtempSync(join(resolve(temporaryRoot), 'dsh-desktop-runtime-smoke-'))
+  const dshHome = join(root, 'dsh-home')
+  const agentsHome = join(root, 'agents-home')
+  const cwd = join(root, 'workspace')
+  for (const directory of [dshHome, agentsHome, cwd]) mkdirSync(directory)
+  const env = Object.fromEntries(Object.entries(inherited).filter(([name]) => {
+    return !/^DSH_/iu.test(name) && !/KEY|PASSWORD|SECRET|TOKEN/iu.test(name)
+  }))
+  let disposed = false
+  return {
+    root,
+    cwd,
+    env: {
+      ...env,
+      DSH_AGENTS_HOME: agentsHome,
+      DSH_HOME: dshHome,
+      HOME: root,
+      NO_COLOR: '1',
+      USERPROFILE: root,
+    },
+    dispose: () => {
+      if (disposed) return
+      unlinkLinksBelow(root)
+      rmSync(root, { recursive: true, force: true })
+      disposed = true
+    },
+  }
+}
 
-let output = ''
-let settled = false
-let timeout
+function unlinkLinksBelow(directory) {
+  for (const name of readdirSync(directory)) {
+    const path = join(directory, name)
+    const stat = lstatSync(path)
+    // Unlink junctions before recursive removal so cleanup cannot traverse into the staged runtime.
+    if (stat.isSymbolicLink()) {
+      unlinkSync(path)
+      continue
+    }
+    if (stat.isDirectory()) unlinkLinksBelow(path)
+  }
+}
 
-child.stdout.setEncoding('utf8')
-child.stderr.setEncoding('utf8')
-child.stdout.on('data', (chunk) => {
-  appendOutput(chunk)
-  const match = output.match(readyLine)
-  if (match?.[1] !== undefined) void verifyUrl(match[1])
-})
-child.stderr.on('data', appendOutput)
-child.once('error', fail)
-child.once('exit', (code, signal) => {
-  if (!settled) fail(new Error(`backend exited before readiness (code ${String(code)}, signal ${String(signal)})`))
-})
+async function main() {
+  const runtimeRoot = resolve(process.argv[2] ?? join(desktopRoot, '.runtime'))
+  const executable = join(runtimeRoot, 'node.exe')
+  const entry = join(runtimeRoot, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
+  const sandbox = createRuntimeSmokeSandbox()
+  const child = spawn(executable, [entry, 'web', '--host', '127.0.0.1', '--port', '0'], {
+    cwd: sandbox.cwd,
+    env: sandbox.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
+  })
+  let output = ''
+  const appendOutput = chunk => { output = `${output}${chunk}`.slice(-16_384) }
 
-timeout = setTimeout(() => {
-  fail(new Error(`backend did not become ready within ${startupTimeoutMs} ms`))
-}, startupTimeoutMs)
+  child.stdout.setEncoding('utf8')
+  child.stderr.setEncoding('utf8')
+  child.stdout.on('data', appendOutput)
+  child.stderr.on('data', appendOutput)
 
-async function verifyUrl(url) {
-  if (settled) return
-  settled = true
-  clearTimeout(timeout)
   try {
+    const url = await waitForReady(child, () => output)
     const response = await fetch(url, { signal: AbortSignal.timeout(requestTimeoutMs) })
     if (!response.ok) throw new Error(`backend returned HTTP ${response.status}`)
     console.log(`dsh desktop runtime: ${url} returned HTTP ${response.status}`)
   } catch (error) {
     process.exitCode = 1
-    console.error(error instanceof Error ? error.message : String(error))
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(`${message}\n${redact(output).trim()}`.trim())
   } finally {
-    await stopChild()
+    await stopChild(child)
+    sandbox.dispose()
   }
 }
 
-function fail(error) {
-  if (settled) return
-  settled = true
-  clearTimeout(timeout)
-  process.exitCode = 1
-  console.error(`${error.message}\n${redact(output).trim()}`.trim())
-  void stopChild()
+async function waitForReady(child, output) {
+  return await new Promise((resolveReady, rejectReady) => {
+    let settled = false
+    const finish = callback => value => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      callback(value)
+    }
+    const resolveOnce = finish(resolveReady)
+    const rejectOnce = finish(rejectReady)
+    const inspect = () => {
+      const match = output().match(readyLine)
+      if (match?.[1] !== undefined) resolveOnce(match[1])
+    }
+    const timeout = setTimeout(() => {
+      rejectOnce(new Error(`backend did not become ready within ${startupTimeoutMs} ms`))
+    }, startupTimeoutMs)
+    child.stdout.on('data', inspect)
+    child.once('error', rejectOnce)
+    child.once('exit', (code, signal) => {
+      rejectOnce(new Error(`backend exited before readiness (code ${String(code)}, signal ${String(signal)})`))
+    })
+    inspect()
+  })
 }
 
-function appendOutput(chunk) {
-  output = `${output}${chunk}`.slice(-16_384)
-}
-
-async function stopChild() {
+async function stopChild(child) {
   if (child.exitCode !== null || child.signalCode !== null) return
   child.kill('SIGTERM')
   let shutdownTimeout
@@ -93,3 +145,5 @@ function redact(value) {
     .replace(/\b(sk-[A-Za-z0-9_-]{12,})\b/gu, '[redacted]')
     .replace(/((?:api[_-]?key|authorization)\s*[:=]\s*)[^\s,;]+/giu, '$1[redacted]')
 }
+
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) await main()
