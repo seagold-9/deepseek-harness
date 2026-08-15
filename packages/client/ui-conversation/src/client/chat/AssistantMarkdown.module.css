@@ -17,6 +17,35 @@
   gap: 8px;
 }
 
+.selectionMenu {
+  position: fixed;
+  z-index: 30;
+  width: max-content;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-2);
+  box-shadow: var(--dsw-shadow-lv3);
+}
+
+.selectionMenu button {
+  min-height: 28px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.selectionMenu button:hover,
+.selectionMenu button:focus-visible {
+  outline: none;
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
 .annotationEditor {
   position: fixed;
   z-index: 30;

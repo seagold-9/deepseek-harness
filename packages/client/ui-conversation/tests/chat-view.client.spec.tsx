@@ -821,7 +821,7 @@ describe('ChatView', () => {
     expect(view.container.querySelectorAll('h1')).toHaveLength(2)
   })
 
-  it('adds a comment on selected assistant text to the composer draft', () => {
+  it('offers a selection action before opening the optional annotation editor', () => {
     const h = makeHarness({ nodes: [assistant(1, 'Keep this exact phrase in context.')] })
     const view = render(<h.ChatView {...h.props} />)
     const answer = view.getByText('Keep this exact phrase in context.')
@@ -836,13 +836,65 @@ describe('ChatView', () => {
     selection.removeAllRanges()
     selection.addRange(range)
 
-    fireEvent.mouseUp(answer)
-    const editor = view.getByRole('textbox', { name: '写下对这段内容的批注' })
+    fireEvent.mouseDown(answer)
+    fireEvent.mouseUp(document.body)
+    expect(selection.toString()).toBe('this exact phrase')
+    expect(view.queryByRole('textbox', { name: '添加可选评论…' })).toBeNull()
+    fireEvent.click(view.getByRole('menuitem', { name: '添加到对话' }))
+    const editor = view.getByRole('textbox', { name: '添加可选评论…' })
     fireEvent.change(editor, { target: { value: '这里需要更具体。' } })
     fireEvent.keyDown(editor, { key: 'Enter' })
 
     expect(h.appendAnnotation).toHaveBeenCalledWith('> this exact phrase\n\n批注: 这里需要更具体。')
-    expect(view.queryByRole('textbox', { name: '写下对这段内容的批注' })).toBeNull()
+    expect(view.queryByRole('textbox', { name: '添加可选评论…' })).toBeNull()
+  })
+
+  it('offers the selection action when a whole paragraph drag ends outside the response', () => {
+    const answerText = 'Select this entire paragraph, including its period.'
+    const h = makeHarness({ nodes: [assistant(1, answerText)] })
+    const view = render(<h.ChatView {...h.props} />)
+    const answer = view.getByText(answerText)
+    const text = answer.firstChild!
+    const range = document.createRange()
+    range.setStart(text, 0)
+    range.setEnd(text, answerText.length)
+    Object.defineProperty(range, 'getBoundingClientRect', {
+      value: () => ({ left: 80, right: 420, top: 80, bottom: 122, width: 340, height: 42 }),
+    })
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseDown(answer)
+    fireEvent.mouseUp(document.body, { clientX: 410, clientY: 130 })
+
+    expect(selection.toString()).toBe(answerText)
+    const action = view.getByRole('menuitem', { name: '添加到对话' })
+    expect(action.parentElement?.style.left).toBe('320px')
+    expect(action.parentElement?.style.top).toBe('138px')
+  })
+
+  it('adds a selected quote without requiring a comment', () => {
+    const h = makeHarness({ nodes: [assistant(1, 'Keep this exact phrase in context.')] })
+    const view = render(<h.ChatView {...h.props} />)
+    const answer = view.getByText('Keep this exact phrase in context.')
+    const text = answer.firstChild!
+    const range = document.createRange()
+    range.setStart(text, 5)
+    range.setEnd(text, 22)
+    Object.defineProperty(range, 'getBoundingClientRect', {
+      value: () => ({ left: 100, right: 220, top: 80, bottom: 102, width: 120, height: 22 }),
+    })
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseDown(answer)
+    fireEvent.mouseUp(document.body)
+    fireEvent.click(view.getByRole('menuitem', { name: '添加到对话' }))
+    fireEvent.click(view.getByRole('button', { name: '添加到输入框' }))
+
+    expect(h.appendAnnotation).toHaveBeenCalledWith('> this exact phrase')
   })
 
   it('streaming partial frames update the tail without replacing a sibling Tool row', () => {

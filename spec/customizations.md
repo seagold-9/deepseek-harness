@@ -40,9 +40,9 @@ Status: Implemented
 
 Status: Implemented
 
-Users can select text in an Assistant response, open the annotation editor, enter a note, and append both the selected text and annotation to the current composer draft.
+Selecting text in an Assistant response opens an action menu beside the selection endpoint without preventing browser copy. Choosing **Add to conversation** opens an optional-comment editor at the same endpoint and appends the selected text plus any entered note to the current composer draft.
 
-The annotation editor has an opaque background and clear text colors; the selection remains identifiable while editing. The implementation is also described in `.agents/notes/implemented/feature/2026-08-15-response-selection-annotations.md` and its Chinese counterpart.
+The annotation editor has an opaque background and clear text colors. The response retains no highlight or reference number after the quote is added to the composer. The implementation is also described in `.agents/notes/implemented/feature/2026-08-15-response-selection-annotations.md` and its Chinese counterpart.
 
 ## Identity elements
 

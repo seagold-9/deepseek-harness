@@ -20,6 +20,37 @@ import { messageImageLabels } from '../image-labels.ts'
 import { ReasoningRow } from './ReasoningRow.tsx'
 import css from './AssistantMarkdown.module.css'
 
+interface FixedRect {
+  readonly left: number
+  readonly top: number
+  readonly width: number
+  readonly height: number
+}
+
+interface ResponseSelection {
+  readonly text: string
+  readonly anchor: FixedRect
+  readonly left: number
+  readonly top: number
+  readonly mode: 'menu' | 'editor'
+}
+
+function fixedRect(rect: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>): FixedRect {
+  return { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+}
+
+function popoverPosition(bounds: FixedRect, width: number, height: number): Pick<FixedRect, 'left' | 'top'> {
+  const availableWidth = Math.min(width, window.innerWidth - 24)
+  const left = Math.min(
+    Math.max(12, bounds.left + bounds.width / 2 - availableWidth / 2),
+    window.innerWidth - availableWidth - 12,
+  )
+  const top = bounds.top + bounds.height + height + 12 <= window.innerHeight
+    ? bounds.top + bounds.height + 8
+    : Math.max(12, bounds.top - height - 8)
+  return { left, top }
+}
+
 export interface AssistantMarkdownProps {
   blocks: readonly AssistantBlock[]
   streaming: boolean
@@ -39,9 +70,10 @@ export interface AssistantMarkdownProps {
 export const AssistantMarkdown = memo(function AssistantMarkdown({
   blocks, streaming, interrupted, loadImage, mentions, appendAnnotation, t,
 }: AssistantMarkdownProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  const editorRef = useRef<HTMLDivElement | null>(null)
-  const [annotation, setAnnotation] = useState<{ text: string; left: number; top: number } | null>(null)
+  const bodyRef = useRef<HTMLDivElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
+  const selectingRef = useRef(false)
+  const [responseSelection, setResponseSelection] = useState<ResponseSelection | null>(null)
   const [comment, setComment] = useState('')
   const imageLoader = loadImage ?? (() => Promise.reject(new Error(t('image.serviceUnavailable'))))
   // Stable per locale revision (t identity changes on switch): a fresh object
@@ -55,54 +87,82 @@ export const AssistantMarkdown = memo(function AssistantMarkdown({
     || interrupted === true
     || blocks.some(block => block.kind !== 'tool-call')
 
-  const captureSelection = useCallback((): void => {
-    const root = rootRef.current
+  const captureSelection = useCallback((pointer?: Pick<MouseEvent, 'clientX' | 'clientY'>): void => {
+    const body = bodyRef.current
     const selection = window.getSelection()
-    if (appendAnnotation === undefined || root === null || selection === null || selection.rangeCount === 0) return
+    if (appendAnnotation === undefined || body === null || selection === null || selection.rangeCount === 0) return
     const anchor = selection.anchorNode
     const focus = selection.focusNode
     const text = selection.toString().trim()
-    if (anchor === null || focus === null || text === '' || !root.contains(anchor) || !root.contains(focus)) return
-    const rect = selection.getRangeAt(0).getBoundingClientRect()
-    const width = Math.min(320, window.innerWidth - 24)
-    const left = Math.min(Math.max(12, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 12)
-    const editorHeight = 104
-    const top = rect.bottom + editorHeight + 12 <= window.innerHeight
-      ? rect.bottom + 8
-      : Math.max(12, rect.top - editorHeight - 8)
+    if (anchor === null || focus === null || text === '' || !body.contains(anchor) || !body.contains(focus)) return
+    const bounds = fixedRect(selection.getRangeAt(0).getBoundingClientRect())
+    const selectionAnchor = pointer === undefined
+      ? bounds
+      : { left: pointer.clientX, top: pointer.clientY, width: 0, height: 0 }
+    const position = popoverPosition(selectionAnchor, 180, 36)
     setComment('')
-    setAnnotation({ text, left, top })
+    setResponseSelection({
+      text,
+      anchor: selectionAnchor,
+      ...position,
+      mode: 'menu',
+    })
   }, [appendAnnotation])
 
   useEffect(() => {
-    if (annotation === null) return
-    const dismiss = (event: MouseEvent): void => {
-      if (!editorRef.current?.contains(event.target as Node)) setAnnotation(null)
+    const finishSelection = (event: MouseEvent): void => {
+      if (!selectingRef.current) return
+      selectingRef.current = false
+      captureSelection(event)
     }
-    const dismissOnScroll = (): void => { setAnnotation(null) }
+    document.addEventListener('mouseup', finishSelection)
+    return () => { document.removeEventListener('mouseup', finishSelection) }
+  }, [captureSelection])
+
+  useEffect(() => {
+    if (responseSelection === null) return
+    const dismiss = (event: MouseEvent): void => {
+      if (!popoverRef.current?.contains(event.target as Node)) setResponseSelection(null)
+    }
+    const dismissOnViewportChange = (): void => { setResponseSelection(null) }
+    const dismissOnEscape = (event: globalThis.KeyboardEvent): void => {
+      if (event.key === 'Escape') setResponseSelection(null)
+    }
     document.addEventListener('mousedown', dismiss)
-    window.addEventListener('scroll', dismissOnScroll, true)
-    window.addEventListener('resize', dismissOnScroll)
+    window.addEventListener('keydown', dismissOnEscape)
+    window.addEventListener('scroll', dismissOnViewportChange, true)
+    window.addEventListener('resize', dismissOnViewportChange)
     return () => {
       document.removeEventListener('mousedown', dismiss)
-      window.removeEventListener('scroll', dismissOnScroll, true)
-      window.removeEventListener('resize', dismissOnScroll)
+      window.removeEventListener('keydown', dismissOnEscape)
+      window.removeEventListener('scroll', dismissOnViewportChange, true)
+      window.removeEventListener('resize', dismissOnViewportChange)
     }
-  }, [annotation])
+  }, [responseSelection])
+
+  const openAnnotationEditor = useCallback((): void => {
+    setResponseSelection((selection) => {
+      if (selection === null) return null
+      return { ...selection, ...popoverPosition(selection.anchor, 320, 104), mode: 'editor' }
+    })
+    window.getSelection()?.removeAllRanges()
+  }, [])
 
   const confirmAnnotation = useCallback((): void => {
-    if (annotation === null || appendAnnotation === undefined || comment.trim() === '') return
-    const quote = annotation.text.split(/\r?\n/).map(line => `> ${line}`).join('\n')
-    appendAnnotation(`${quote}\n\n${t('annotation.comment')}: ${comment.trim()}`)
+    if (responseSelection?.mode !== 'editor' || appendAnnotation === undefined) return
+    const quote = responseSelection.text.split(/\r?\n/).map(line => `> ${line}`).join('\n')
+    const note = comment.trim()
+    const annotationText = note === '' ? quote : `${quote}\n\n${t('annotation.comment')}: ${note}`
+    appendAnnotation(annotationText)
     window.getSelection()?.removeAllRanges()
-    setAnnotation(null)
+    setResponseSelection(null)
     setComment('')
-  }, [annotation, appendAnnotation, comment, t])
+  }, [responseSelection, appendAnnotation, comment, t])
 
   const onAnnotationKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.key === 'Escape') {
       event.preventDefault()
-      setAnnotation(null)
+      setResponseSelection(null)
       return
     }
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -164,22 +224,42 @@ export const AssistantMarkdown = memo(function AssistantMarkdown({
   }
   return (
     <div
-      ref={rootRef}
       className={css.root}
       data-streaming={streaming || undefined}
-      onMouseUp={captureSelection}
-      onKeyUp={captureSelection}
     >
-      <div className={css.body}>
+      <div
+        ref={bodyRef}
+        className={css.body}
+        onMouseDownCapture={() => { selectingRef.current = true }}
+        onKeyUp={() => { captureSelection() }}
+      >
         {rendered}
         {interrupted && <span className={css.stopped}>{t('message.stopped')}</span>}
       </div>
-      {annotation !== null && (
+      {responseSelection?.mode === 'menu' && (
         <div
-          ref={editorRef}
+          ref={popoverRef}
+          className={css.selectionMenu}
+          data-selection-menu=""
+          role="menu"
+          style={{ left: responseSelection.left, top: responseSelection.top }}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onMouseDown={(event) => { event.preventDefault() }}
+            onClick={openAnnotationEditor}
+          >
+            {t('annotation.addToConversation')}
+          </button>
+        </div>
+      )}
+      {responseSelection?.mode === 'editor' && (
+        <div
+          ref={popoverRef}
           className={css.annotationEditor}
           data-annotation-editor=""
-          style={{ left: annotation.left, top: annotation.top }}
+          style={{ left: responseSelection.left, top: responseSelection.top }}
         >
           <textarea
             autoFocus
@@ -194,7 +274,6 @@ export const AssistantMarkdown = memo(function AssistantMarkdown({
             type="button"
             aria-label={t('annotation.confirm')}
             title={t('annotation.confirm')}
-            disabled={comment.trim() === ''}
             onClick={confirmAnnotation}
           >
             <IconCheckOutline16 />
