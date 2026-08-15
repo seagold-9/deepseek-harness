@@ -11,6 +11,7 @@
     "sandbox-exec",
     "tar",
     "taskkill",
+    "taskkill.exe",
     "where.exe"
   ],
   "ignoreWorkspaces": [
@@ -724,6 +725,11 @@
         "@types/react-dom",
         "react",
         "react-dom"
+      ]
+    },
+    "apps/desktop-runtime": {
+      "ignoreDependencies": [
+        ".+"
       ]
     },
     "apps/cli": {

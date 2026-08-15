@@ -1,0 +1,85 @@
+{
+  "name": "@deepseek-ai/dsh-desktop",
+  "description": "Windows desktop shell for the DeepSeek Harness Web application",
+  "version": "0.1.0-rc.5",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "apps/desktop"
+  },
+  "type": "module",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "icon:build": "node scripts/render-icon.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --root ../.. apps/desktop/tests/backend.spec.ts",
+    "dev": "pnpm run build && electron .",
+    "runtime:prepare": "node scripts/prepare-runtime.mjs",
+    "runtime:smoke": "node scripts/smoke-runtime.mjs",
+    "dist:win": "pnpm run build && pnpm run icon:build && pnpm run runtime:prepare && pnpm run runtime:smoke && electron-builder --win nsis portable --x64"
+  },
+  "files": [
+    "lib/*.js"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3",
+    "sharp": "0.35.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "build": {
+    "appId": "io.github.seagold9.dsh",
+    "productName": "dsh",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "lib/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".runtime/node.exe",
+        "to": "runtime/node.exe"
+      },
+      {
+        "from": ".runtime/node_modules",
+        "to": "runtime/node_modules",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "build/icon.png",
+        "to": "assets/icon.png"
+      }
+    ],
+    "win": {
+      "executableName": "dsh",
+      "icon": "build/icon.png",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "dsh-Setup-${version}-${arch}.${ext}",
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "dsh"
+    },
+    "portable": {
+      "artifactName": "dsh-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}
